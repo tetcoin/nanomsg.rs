@@ -11,6 +11,8 @@ fn main() {
 		base_config.define("HAVE_KQUEUE", Some("1"));
 		base_config.define("NN_USE_KQUEUE", Some("1"));
 
+		base_config.file("nanomsg/src/aio/poller.c");
+
 	}
 	if cfg!(target_os = "linux") {
 		base_config.define("_GNU_SOURCE", Some("1"));
@@ -29,6 +31,8 @@ fn main() {
 		base_config.define("NN_HAVE_GETADDRINFO_A", Some("1"));
 		base_config.define("NN_HAVE_SOCKETPAIR", Some("1"));
 		base_config.define("NN_USE_EVENTFD", Some("1"));
+
+		base_config.file("nanomsg/src/aio/poller.c");
 	}
 
 	if cfg!(unix) {
@@ -59,6 +63,8 @@ fn main() {
 		base_config.define("NN_HAVE_MSG_CONTROL", Some("1"));
 		base_config.define("NN_USE_PIPE", Some("1"));
 		base_config.define("HAVE_DLFCN_H", Some("1"));
+
+		base_config.file("nanomsg/src/aio/poller.c");
 	}
 
 	if cfg!(windows) {
@@ -83,7 +89,7 @@ fn main() {
 
 	base_config.file("nanomsg/src/aio/ctx.c");
 	base_config.file("nanomsg/src/aio/fsm.c");
-	base_config.file("nanomsg/src/aio/poller.c");
+	
 	base_config.file("nanomsg/src/aio/pool.c");
 	base_config.file("nanomsg/src/aio/timer.c");
 	base_config.file("nanomsg/src/aio/timerset.c");
