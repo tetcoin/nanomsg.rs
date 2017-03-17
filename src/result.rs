@@ -1,7 +1,7 @@
 extern crate libc;
 
 use libc::{c_int};
-use nanomsg_sys;
+use nanomsg_sys::{self, posix_consts};
 
 use std::str;
 use std::fmt;
@@ -11,12 +11,13 @@ use std::ffi::CStr;
 use std::result;
 use std::error;
 
+
 pub type Result<T> = result::Result<T, Error>;
 
 #[derive(Clone, Copy, Eq, PartialEq)]
 pub enum Error {
     Unknown                    = 0 as isize,
-    OperationNotSupported      = nanomsg_sys::ENOTSUP          as isize,
+    OperationNotSupported      = posix_consts::ENOTSUP         as isize,
     ProtocolNotSupported       = nanomsg_sys::EPROTONOSUPPORT  as isize,
     NoBufferSpace              = nanomsg_sys::ENOBUFS          as isize,
     NetworkDown                = nanomsg_sys::ENETDOWN         as isize,
@@ -58,7 +59,7 @@ impl Error {
 
     pub fn from_raw(raw: c_int) -> Error {
         match raw {
-            nanomsg_sys::ENOTSUP         => Error::OperationNotSupported    ,
+            posix_consts::ENOTSUP        => Error::OperationNotSupported    ,
             nanomsg_sys::EPROTONOSUPPORT => Error::ProtocolNotSupported     ,
             nanomsg_sys::ENOBUFS         => Error::NoBufferSpace            ,
             nanomsg_sys::ENETDOWN        => Error::NetworkDown              ,
@@ -177,7 +178,7 @@ pub fn last_nano_error() -> Error {
 #[cfg(test)]
 #[allow(unused_must_use)]
 mod tests {
-    use nanomsg_sys;
+    use nanomsg_sys::{self, posix_consts};
     use libc;
     use super::{Error};
     use std::io;
@@ -190,7 +191,7 @@ mod tests {
 
     #[test]
     fn can_convert_error_code_to_error() {
-        assert_convert_error_code_to_error(nanomsg_sys::ENOTSUP, Error::OperationNotSupported);
+        assert_convert_error_code_to_error(posix_consts::ENOTSUP, Error::OperationNotSupported);
         assert_convert_error_code_to_error(nanomsg_sys::EPROTONOSUPPORT, Error::ProtocolNotSupported);
         assert_convert_error_code_to_error(nanomsg_sys::EADDRINUSE, Error::AddressInUse);
         assert_convert_error_code_to_error(nanomsg_sys::EHOSTUNREACH, Error::HostUnreachable);
