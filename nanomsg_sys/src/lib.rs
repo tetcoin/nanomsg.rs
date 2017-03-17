@@ -86,8 +86,7 @@ pub mod posix_consts {
     // Use the value from the windows definitions if an override is required.
     pub const NN_HAUSNUMERO: c_int = 156384712;
 
-    #[cfg(not(any(target_os = "macos", target_os = "ios")))]
-    pub const ENOTSUP: c_int = NN_HAUSNUMERO + 1;
+    pub const ENOTSUP: c_int = ::libc::ENOTSUP;
 
     // nanomsg uses EACCESS as an alias for EACCES
     pub const EACCESS: c_int = ::libc::EACCES;
