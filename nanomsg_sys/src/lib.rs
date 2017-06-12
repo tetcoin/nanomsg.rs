@@ -5,6 +5,39 @@ pub use libc::*;
 
 pub use posix_consts::*;
 
+pub use posix_consts::ENOTSUP;
+pub use posix_consts::EPROTO;
+pub use posix_consts::EACCESS;
+pub use posix_consts::EISCONN;
+pub use posix_consts::ESOCKTNOSUPPORT;
+
+pub use posix_consts::EINTR;
+pub use posix_consts::EBADF;
+pub use posix_consts::EAGAIN;
+pub use posix_consts::EFAULT;
+pub use posix_consts::ENODEV;
+pub use posix_consts::EINVAL;
+pub use posix_consts::EMFILE;
+pub use posix_consts::ENAMETOOLONG;
+pub use posix_consts::EADDRINUSE;
+pub use posix_consts::EADDRNOTAVAIL;
+pub use posix_consts::EAFNOSUPPORT;
+pub use posix_consts::ECONNABORTED;
+pub use posix_consts::ECONNREFUSED;
+pub use posix_consts::ECONNRESET;
+pub use posix_consts::EHOSTUNREACH;
+pub use posix_consts::EINPROGRESS;
+pub use posix_consts::EMSGSIZE;
+pub use posix_consts::ENETDOWN;
+pub use posix_consts::ENETRESET;
+pub use posix_consts::ENETUNREACH;
+pub use posix_consts::ENOBUFS;
+pub use posix_consts::ENOPROTOOPT;
+pub use posix_consts::ENOTCONN;
+pub use posix_consts::ENOTSOCK;
+pub use posix_consts::EPROTONOSUPPORT;
+pub use posix_consts::ETIMEDOUT;
+
 pub const AF_SP: c_int = 1;
 pub const AF_SP_RAW: c_int = 2;
 pub const NN_PROTO_PIPELINE: c_int = 5;
@@ -69,6 +102,36 @@ pub const EFSM: c_int = posix_consts::NN_HAUSNUMERO + 54;
 #[cfg(not(windows))]
 pub mod posix_consts {
     use libc::*;
+	pub use ::libc::EPROTO;
+	pub use ::libc::EISCONN;
+	pub use ::libc::ESOCKTNOSUPPORT;
+
+	pub use ::libc::EINTR;
+	pub use ::libc::EBADF;
+	pub use ::libc::EAGAIN;
+	pub use ::libc::EFAULT;
+	pub use ::libc::ENODEV;
+	pub use ::libc::EINVAL;
+	pub use ::libc::EMFILE;
+	pub use ::libc::ENAMETOOLONG;
+	pub use ::libc::EADDRINUSE;
+	pub use ::libc::EADDRNOTAVAIL;
+	pub use ::libc::EAFNOSUPPORT;
+	pub use ::libc::ECONNABORTED;
+	pub use ::libc::ECONNREFUSED;
+	pub use ::libc::ECONNRESET;
+	pub use ::libc::EHOSTUNREACH;
+	pub use ::libc::EINPROGRESS;
+	pub use ::libc::EMSGSIZE;
+	pub use ::libc::ENETDOWN;
+	pub use ::libc::ENETRESET;
+	pub use ::libc::ENETUNREACH;
+	pub use ::libc::ENOBUFS;
+	pub use ::libc::ENOPROTOOPT;
+	pub use ::libc::ENOTCONN;
+	pub use ::libc::ENOTSOCK;
+	pub use ::libc::EPROTONOSUPPORT;
+	pub use ::libc::ETIMEDOUT;
     // NOTE:
     // If the platform you are compiling for fails to implement the posix
     // constant, then add an exception below
@@ -82,6 +145,8 @@ pub mod posix_consts {
 
     #[cfg(not(any(target_os = "macos", target_os = "ios")))]
     pub const ENOTSUP: c_int = NN_HAUSNUMERO + 1;
+    #[cfg(any(target_os = "macos", target_os = "ios"))]
+    pub const ENOTSUP: c_int = ::libc::ENOTSUP;
 
     // nanomsg uses EACCESS as an alias for EACCES
     pub const EACCESS: c_int = ::libc::EACCES;
