@@ -13,9 +13,9 @@ before_script:
 - pip install 'travis-cargo<0.2' --user && export PATH=$HOME/.local/bin:$PATH
 install:
 - make deps
-- pkg-config --libs nanomsg
+- pkg-config --libs tetsy-nanomsg
 script:
-- cd nanomsg_sys && cargo test && cd ..
+- cd tetsy-nanomsg-sys && cargo test && cd ..
 - cargo test
 - cargo doc
 after_success:

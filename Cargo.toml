@@ -1,5 +1,5 @@
 [project]
-name = "nanomsg"
+name = "tetsy-nanomsg"
 version = "0.7.0"
 authors = [
   "Daniel Fagnan <dnfagnan@gmail.com>",
@@ -12,19 +12,19 @@ authors = [
   "Chip Collier"
 ]
 
-description = "A high-level, Rust idiomatic wrapper around nanomsg."
-homepage = "https://github.com/thehydroimpulse/nanomsg.rs"
-documentation = "https://github.com/thehydroimpulse/nanomsg.rs"
-repository = "https://github.com/thehydroimpulse/nanomsg.rs"
+description = "A high-level, Rust idiomatic wrapper around tetsy-nanomsg."
+homepage = "https://github.com/tetcoin/tetsy-nanomsg"
+documentation = "https://github.com/tetcoin/tetsy-nanomsg"
+repository = "https://github.com/tetcoin/tetsy-nanomsg"
 readme = "./README.md"
-keywords = ["nanomsg", "binding", "network", "pub", "sub"]
+keywords = ["tetsy-nanomsg", "binding", "network", "pub", "sub"]
 license = "MIT"
 
 [features]
 bundled = ["nanomsg-sys/bundled"]
 
 [dependencies.nanomsg-sys]
-path = "./nanomsg_sys"
+path = "./tetsy-nanomsg-sys"
 version = "0.7.0"
 
 [dependencies]

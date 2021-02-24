@@ -1,10 +1,10 @@
-extern crate nanomsg_sys;
+extern crate tetsy_nanomsg_sys;
 extern crate libc;
 
 pub use result::{Result, Error};
 pub use endpoint::Endpoint;
 
-use nanomsg_sys::nn_pollfd;
+use tetsy_nanomsg_sys::nn_pollfd;
 
 use libc::{c_int, c_void, size_t};
 use std::ffi::CString;
@@ -35,32 +35,32 @@ pub enum Protocol {
     /// Used to implement the client application that sends requests and receives replies.
     ///
     /// **See also:** `Socket::set_request_resend_interval`
-    Req = (nanomsg_sys::NN_REQ) as isize,
+    Req = (tetsy_nanomsg_sys::NN_REQ) as isize,
 
     /// Used to implement the stateless worker that receives requests and sends replies.
-    Rep = (nanomsg_sys::NN_REP) as isize,
+    Rep = (tetsy_nanomsg_sys::NN_REP) as isize,
 
     /// This socket is used to send messages to a cluster of load-balanced nodes.
     /// Receive operation is not implemented on this socket type.
-    Push = (nanomsg_sys::NN_PUSH) as isize,
+    Push = (tetsy_nanomsg_sys::NN_PUSH) as isize,
 
     /// This socket is used to receive a message from a cluster of nodes.
     /// Send operation is not implemented on this socket type.
-    Pull = (nanomsg_sys::NN_PULL) as isize,
+    Pull = (tetsy_nanomsg_sys::NN_PULL) as isize,
 
     /// Socket for communication with exactly one peer.
     /// Each party can send messages at any time.
     /// If the peer is not available or send buffer is full subsequent calls to `write`
     /// will block until it’s possible to send the message.
-    Pair = (nanomsg_sys::NN_PAIR) as isize,
+    Pair = (tetsy_nanomsg_sys::NN_PAIR) as isize,
 
     /// Sent messages are distributed to all nodes in the topology.
     /// Incoming messages from all other nodes in the topology are fair-queued in the socket.
-    Bus = (nanomsg_sys::NN_BUS) as isize,
+    Bus = (tetsy_nanomsg_sys::NN_BUS) as isize,
 
     /// This socket is used to distribute messages to multiple destinations.
     /// Receive operation is not defined.
-    Pub = (nanomsg_sys::NN_PUB) as isize,
+    Pub = (tetsy_nanomsg_sys::NN_PUB) as isize,
 
     /// Receives messages from the publisher.
     /// Only messages that the socket is subscribed to are received.
@@ -68,7 +68,7 @@ pub enum Protocol {
     /// Send operation is not defined on this socket.
     ///
     /// **See also:** `Socket::subscribe` and `Socket::unsubscribe`.
-    Sub = (nanomsg_sys::NN_SUB) as isize,
+    Sub = (tetsy_nanomsg_sys::NN_SUB) as isize,
 
     /// Used to send the survey.
     /// The survey is delivered to all the connected respondents.
@@ -76,12 +76,12 @@ pub enum Protocol {
     /// When the survey deadline expires, receive will return Timeout error.
     ///
     /// **See also:** `Socket::set_survey_deadline`
-    Surveyor = (nanomsg_sys::NN_SURVEYOR) as isize,
+    Surveyor = (tetsy_nanomsg_sys::NN_SURVEYOR) as isize,
 
     /// Use to respond to the survey.
     /// Survey is received using receive function, response is sent using send function
     /// This socket can be connected to at most one peer.
-    Respondent = (nanomsg_sys::NN_RESPONDENT) as isize
+    Respondent = (tetsy_nanomsg_sys::NN_RESPONDENT) as isize
 }
 
 impl Protocol {
@@ -93,11 +93,11 @@ impl Protocol {
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Transport {
     /// In-process transport
-    Inproc = (nanomsg_sys::NN_INPROC) as isize,
+    Inproc = (tetsy_nanomsg_sys::NN_INPROC) as isize,
     /// Inter-process transport
-    Ipc = (nanomsg_sys::NN_IPC) as isize,
+    Ipc = (tetsy_nanomsg_sys::NN_IPC) as isize,
     /// TCP transport
-    Tcp = (nanomsg_sys::NN_TCP) as isize
+    Tcp = (tetsy_nanomsg_sys::NN_TCP) as isize
 }
 
 impl Transport {
@@ -106,7 +106,7 @@ impl Transport {
     }
 }
 
-/// A type-safe socket wrapper around nanomsg's own socket implementation. This
+/// A type-safe socket wrapper around tetsy_nanomsg's own socket implementation. This
 /// provides a safe interface for dealing with initializing the sockets, sending
 /// and receiving messages.
 pub struct Socket {
@@ -221,7 +221,7 @@ impl Socket {
     /// # Example
     ///
     /// ```rust
-    /// use nanomsg::{Socket, Protocol};
+    /// use tetsy_nanomsg::{Socket, Protocol};
     ///
     /// let mut socket = match Socket::new(Protocol::Pull) {
     ///     Ok(socket) => socket,
@@ -236,7 +236,7 @@ impl Socket {
     /// - `TooManyOpenFiles` : The limit on the total number of open SP sockets or OS limit for file descriptors has been reached.
     /// - `Terminating` : The library is terminating.
     pub fn new(protocol: Protocol) -> Result<Socket> {
-        Socket::create_socket(nanomsg_sys::AF_SP, protocol)
+        Socket::create_socket(tetsy_nanomsg_sys::AF_SP, protocol)
     }
 
     /// Allocate and initialize a new Nanomsg socket meant to be used in a device
@@ -244,7 +244,7 @@ impl Socket {
     /// # Example
     ///
     /// ```rust
-    /// use nanomsg::{Socket, Protocol};
+    /// use tetsy_nanomsg::{Socket, Protocol};
     ///
     /// let mut s1 = Socket::new_for_device(Protocol::Req).unwrap();
     /// let mut s2 = Socket::new_for_device(Protocol::Rep).unwrap();
@@ -254,11 +254,11 @@ impl Socket {
     /// // And now `Socket::device(&s1, &s2)` can be called to create the device.
     /// ```
     pub fn new_for_device(protocol: Protocol) -> Result<Socket> {
-        Socket::create_socket(nanomsg_sys::AF_SP_RAW, protocol)
+        Socket::create_socket(tetsy_nanomsg_sys::AF_SP_RAW, protocol)
     }
 
     fn create_socket(domain: c_int, protocol: Protocol) -> Result<Socket> {
-        let socket = unsafe { nanomsg_sys::nn_socket(domain, protocol.to_raw()) };
+        let socket = unsafe { tetsy_nanomsg_sys::nn_socket(domain, protocol.to_raw()) };
 
         error_guard!(socket);
         Ok(Socket {socket: socket})
@@ -277,7 +277,7 @@ impl Socket {
     /// # Example
     ///
     /// ```rust
-    /// use nanomsg::{Socket, Protocol};
+    /// use tetsy_nanomsg::{Socket, Protocol};
     ///
     /// let mut socket = match Socket::new(Protocol::Push) {
     ///     Ok(socket) => socket,
@@ -305,9 +305,9 @@ impl Socket {
     pub fn bind(&mut self, addr: &str) -> Result<Endpoint> {
         let c_addr = CString::new(addr.as_bytes());
         if c_addr.is_err() {
-            return Err(Error::from_raw(nanomsg_sys::EINVAL));
+            return Err(Error::from_raw(tetsy_nanomsg_sys::EINVAL));
         }
-        let ret = unsafe { nanomsg_sys::nn_bind(self.socket, c_addr.unwrap().as_ptr()) };
+        let ret = unsafe { tetsy_nanomsg_sys::nn_bind(self.socket, c_addr.unwrap().as_ptr()) };
 
         error_guard!(ret);
         Ok(Endpoint::new(ret, self.socket))
@@ -319,7 +319,7 @@ impl Socket {
     /// # Example
     ///
     /// ```rust
-    /// use nanomsg::{Socket, Protocol};
+    /// use tetsy_nanomsg::{Socket, Protocol};
     ///
     /// let mut socket = match Socket::new(Protocol::Pull) {
     ///     Ok(socket) => socket,
@@ -344,9 +344,9 @@ impl Socket {
     pub fn connect(&mut self, addr: &str) -> Result<Endpoint> {
         let c_addr = CString::new(addr.as_bytes());
         if c_addr.is_err() {
-            return Err(Error::from_raw(nanomsg_sys::EINVAL));
+            return Err(Error::from_raw(tetsy_nanomsg_sys::EINVAL));
         }
-        let ret = unsafe { nanomsg_sys::nn_connect(self.socket, c_addr.unwrap().as_ptr()) };
+        let ret = unsafe { tetsy_nanomsg_sys::nn_connect(self.socket, c_addr.unwrap().as_ptr()) };
 
         error_guard!(ret);
         Ok(Endpoint::new(ret, self.socket))
@@ -355,13 +355,13 @@ impl Socket {
     /// Non-blocking version of the `read` function.
     /// Any bytes exceeding the length specified by `buf.len()` will be truncated.
     /// Returns the number of bytes of the message stored in the buffer on success.
-    /// Please note that it differs from nanomsg's nn_recv which returns the msg size instead.
+    /// Please note that it differs from tetsy_nanomsg's nn_recv which returns the msg size instead.
     /// An error with the `Error::TryAgain` kind is returned if there's no message to receive for the moment.
     ///
     /// # Example
     ///
     /// ```rust
-    /// use nanomsg::{Socket, Protocol, Error};
+    /// use tetsy_nanomsg::{Socket, Protocol, Error};
     ///
     /// let mut socket = Socket::new(Protocol::Pull).unwrap();
     /// let mut endpoint = socket.connect("ipc:///tmp/nb_read_doc.ipc").unwrap();
@@ -394,7 +394,7 @@ impl Socket {
         let c_buf_len = buf_len as size_t;
         let c_buf_ptr = buf_ptr as *mut c_void;
         let ret = unsafe {
-            nanomsg_sys::nn_recv(self.socket, c_buf_ptr, c_buf_len, nanomsg_sys::NN_DONTWAIT)
+            tetsy_nanomsg_sys::nn_recv(self.socket, c_buf_ptr, c_buf_len, tetsy_nanomsg_sys::NN_DONTWAIT)
         };
 
         error_guard!(ret);
@@ -402,14 +402,14 @@ impl Socket {
     }
 
     /// Non-blocking version of the `read_to_end` function.
-    /// Copy the message allocated by nanomsg into the buffer on success.
+    /// Copy the message allocated by tetsy_nanomsg into the buffer on success.
     /// An error with the `Error::TryAgain` kind is returned if there's no message to receive for the moment.
     ///
     /// # Example:
     ///
     /// ```rust
     /// #![allow(unstable)]
-    /// use nanomsg::{Socket, Protocol, Error};
+    /// use tetsy_nanomsg::{Socket, Protocol, Error};
     ///
     /// let mut socket = Socket::new(Protocol::Pull).unwrap();
     /// let mut endpoint = socket.connect("ipc:///tmp/nb_read_to_end_doc.ipc").unwrap();
@@ -439,7 +439,7 @@ impl Socket {
     pub fn nb_read_to_end(&mut self, buf: &mut Vec<u8>) -> Result<usize> {
         let mut msg : *mut u8 = ptr::null_mut();
         let ret = unsafe {
-            nanomsg_sys::nn_recv(self.socket, mem::transmute(&mut msg), nanomsg_sys::NN_MSG, nanomsg_sys::NN_DONTWAIT)
+            tetsy_nanomsg_sys::nn_recv(self.socket, mem::transmute(&mut msg), tetsy_nanomsg_sys::NN_MSG, tetsy_nanomsg_sys::NN_DONTWAIT)
         };
 
         error_guard!(ret);
@@ -447,7 +447,7 @@ impl Socket {
         let ret = ret as usize;
         let bytes = unsafe { slice::from_raw_parts(msg, ret) };
         buf.extend_from_slice(bytes);
-        unsafe { nanomsg_sys::nn_freemsg(msg as *mut c_void) };
+        unsafe { tetsy_nanomsg_sys::nn_freemsg(msg as *mut c_void) };
         Ok(ret)
     }
 
@@ -457,7 +457,7 @@ impl Socket {
     /// # Example:
     ///
     /// ```rust
-    /// use nanomsg::{Socket, Protocol, Error};
+    /// use tetsy_nanomsg::{Socket, Protocol, Error};
     ///
     /// let mut socket = Socket::new(Protocol::Push).unwrap();
     /// let mut endpoint = socket.connect("ipc:///tmp/nb_write_doc.ipc").unwrap();
@@ -483,7 +483,7 @@ impl Socket {
         let buf_ptr = buf.as_ptr() as *const c_void;
         let buf_len = buf.len() as size_t;
         let ret = unsafe {
-            nanomsg_sys::nn_send(self.socket, buf_ptr, buf_len, nanomsg_sys::NN_DONTWAIT)
+            tetsy_nanomsg_sys::nn_send(self.socket, buf_ptr, buf_len, tetsy_nanomsg_sys::NN_DONTWAIT)
         };
 
         error_guard!(ret);
@@ -495,7 +495,7 @@ impl Socket {
     /// # Example:
     ///
     /// ```rust
-    /// use nanomsg::{Socket, Protocol};
+    /// use tetsy_nanomsg::{Socket, Protocol};
     /// use std::io::{Read, Write};
     ///
     /// let mut push_socket = Socket::new(Protocol::Push).unwrap();
@@ -532,7 +532,7 @@ impl Socket {
         let ptr = buf.as_ptr() as *const c_void;
         let ptr_addr = &ptr as *const _ as *const c_void;
         let len = buf.len();
-        let ret = unsafe { nanomsg_sys::nn_send(self.socket, ptr_addr, nanomsg_sys::NN_MSG, 0) };
+        let ret = unsafe { tetsy_nanomsg_sys::nn_send(self.socket, ptr_addr, tetsy_nanomsg_sys::NN_MSG, 0) };
 
         error_guard!(ret);
         Ok(len)
@@ -550,7 +550,7 @@ impl Socket {
     /// - `Unknown` : Out of memory.
     pub fn allocate_msg<'a>(len: usize) -> Result<&'a mut [u8]> {
         unsafe {
-            let ptr = nanomsg_sys::nn_allocmsg(len as size_t, 0) as *mut u8;
+            let ptr = tetsy_nanomsg_sys::nn_allocmsg(len as size_t, 0) as *mut u8;
             let ptr_value = ptr as isize;
 
             if ptr_value == 0 {
@@ -569,7 +569,7 @@ impl Socket {
     pub fn free_msg<'a>(msg: &'a mut [u8]) -> Result<()> {
         unsafe {
             let ptr = msg.as_mut_ptr() as *mut c_void;
-            let ret = nanomsg_sys::nn_freemsg(ptr);
+            let ret = tetsy_nanomsg_sys::nn_freemsg(ptr);
 
             error_guard!(ret);
             Ok(())
@@ -593,7 +593,7 @@ impl Socket {
     /// # Example
     ///
     /// ```rust
-    /// use nanomsg::{Socket, Protocol, PollFd, PollRequest, PollInOut};
+    /// use tetsy_nanomsg::{Socket, Protocol, PollFd, PollRequest, PollInOut};
     /// use std::thread;
     ///
     /// let mut left_socket = Socket::new(Protocol::Pair).unwrap();
@@ -629,7 +629,7 @@ impl Socket {
     pub fn poll(request: &mut PollRequest, timeout: isize) -> Result<usize> {
         let nn_fds = request.get_nn_fds();
         let len = request.len() as c_int;
-        let ret = unsafe { nanomsg_sys::nn_poll(nn_fds, len, timeout as c_int) };
+        let ret = unsafe { tetsy_nanomsg_sys::nn_poll(nn_fds, len, timeout as c_int) };
 
         error_guard!(ret);
 
@@ -657,14 +657,14 @@ impl Socket {
     /// - `InvalidArgument` : Either one of the socket is not an AF_SP_RAW socket; or the two sockets don’t belong to the same protocol; or the directionality of the sockets doesn’t fit (e.g. attempt to join two SINK sockets to form a device).
     /// - `Terminating` : The library is terminating.
     pub fn device(socket1: &Socket, socket2: &Socket) -> Result<()> {
-        let ret = unsafe { nanomsg_sys::nn_device(socket1.socket, socket2.socket) };
+        let ret = unsafe { tetsy_nanomsg_sys::nn_device(socket1.socket, socket2.socket) };
 
         error_guard!(ret);
         Ok(())
     }
 
     /// Notify all sockets about process termination.
-    /// To help with shutdown of multi-threaded programs nanomsg provides the `terminate` function
+    /// To help with shutdown of multi-threaded programs tetsy_nanomsg provides the `terminate` function
     /// which informs all the open sockets that process termination is underway.
     /// If a socket is blocked inside a blocking function, such as `read`,
     /// it will be unblocked and `Terminating` error will be returned to the user.
@@ -672,14 +672,14 @@ impl Socket {
     /// If waiting inside a polling function, the call will unblock with both read and write signaled.
     /// The `terminate` function itself is non-blocking.
     pub fn terminate() {
-        unsafe { nanomsg_sys::nn_term() };
+        unsafe { tetsy_nanomsg_sys::nn_term() };
     }
 
     fn set_socket_options_c_int(&self, level: c_int, option: c_int, val: c_int) -> Result<()> {
         let val_ptr = &val as *const _ as *const c_void;
 
         let ret = unsafe {
-            nanomsg_sys::nn_setsockopt(self.socket,
+            tetsy_nanomsg_sys::nn_setsockopt(self.socket,
                                       level,
                                       option,
                                       val_ptr,
@@ -693,11 +693,11 @@ impl Socket {
     fn set_socket_options_str(&self, level: c_int, option: c_int, val: &str) -> Result<()> {
         let c_val = CString::new(val.as_bytes());
         if c_val.is_err() {
-            return Err(Error::from_raw(nanomsg_sys::EINVAL));
+            return Err(Error::from_raw(tetsy_nanomsg_sys::EINVAL));
         }
         let ptr = c_val.unwrap().as_ptr() as *const c_void;
         let ret = unsafe {
-            nanomsg_sys::nn_setsockopt(self.socket,
+            tetsy_nanomsg_sys::nn_setsockopt(self.socket,
                                       level,
                                       option,
                                       ptr,
@@ -715,7 +715,7 @@ impl Socket {
         let sz_ptr = &mut sz as *mut size_t;
 
         let ret = unsafe {
-            nanomsg_sys::nn_getsockopt(self.socket,
+            tetsy_nanomsg_sys::nn_getsockopt(self.socket,
                                       level,
                                       option,
                                       val_ptr,
@@ -731,14 +731,14 @@ impl Socket {
 
         let c_val = CString::new(val);
         if c_val.is_err() {
-            return Err(Error::from_raw(nanomsg_sys::EINVAL));
+            return Err(Error::from_raw(tetsy_nanomsg_sys::EINVAL));
         }
 
         let val_ptr = c_val.unwrap().into_raw();
         let sz_ptr = &mut sz as *mut size_t;
 
         let ret = unsafe {
-            nanomsg_sys::nn_getsockopt(self.socket,
+            tetsy_nanomsg_sys::nn_getsockopt(self.socket,
                                        level,
                                        option,
                                        val_ptr as *mut c_void,
@@ -753,8 +753,8 @@ impl Socket {
     /// Specifies how long the socket should try to send pending outbound messages after `drop` have been called.
     /// Negative value means infinite linger. Default value is 1000 (1 second).
     pub fn set_linger(&mut self, linger: isize) -> Result<()> {
-        self.set_socket_options_c_int(nanomsg_sys::NN_SOL_SOCKET,
-                                      nanomsg_sys::NN_LINGER,
+        self.set_socket_options_c_int(tetsy_nanomsg_sys::NN_SOL_SOCKET,
+                                      tetsy_nanomsg_sys::NN_LINGER,
                                       linger as c_int)
     }
 
@@ -762,8 +762,8 @@ impl Socket {
     /// exactly one message may be buffered in addition to the data in the send buffer.
     /// Default value is 128kB.
     pub fn set_send_buffer_size(&mut self, size_in_bytes: usize) -> Result<()> {
-        self.set_socket_options_c_int(nanomsg_sys::NN_SOL_SOCKET,
-                                      nanomsg_sys::NN_SNDBUF,
+        self.set_socket_options_c_int(tetsy_nanomsg_sys::NN_SOL_SOCKET,
+                                      tetsy_nanomsg_sys::NN_SNDBUF,
                                       size_in_bytes as c_int)
     }
 
@@ -771,8 +771,8 @@ impl Socket {
     /// exactly one message may be buffered in addition to the data in the receive buffer.
     /// Default value is 128kB.
     pub fn set_receive_buffer_size(&mut self, size_in_bytes: usize) -> Result<()> {
-        self.set_socket_options_c_int(nanomsg_sys::NN_SOL_SOCKET,
-                                      nanomsg_sys::NN_RCVBUF,
+        self.set_socket_options_c_int(tetsy_nanomsg_sys::NN_SOL_SOCKET,
+                                      tetsy_nanomsg_sys::NN_RCVBUF,
                                       size_in_bytes as c_int)
     }
 
@@ -780,8 +780,8 @@ impl Socket {
     /// If message cannot be sent within the specified timeout, TryAgain error is returned.
     /// Negative value means infinite timeout. Default value is infinite timeout.
     pub fn set_send_timeout(&mut self, timeout: isize) -> Result<()> {
-        self.set_socket_options_c_int(nanomsg_sys::NN_SOL_SOCKET,
-                                      nanomsg_sys::NN_SNDTIMEO,
+        self.set_socket_options_c_int(tetsy_nanomsg_sys::NN_SOL_SOCKET,
+                                      tetsy_nanomsg_sys::NN_SNDTIMEO,
                                       timeout as c_int)
     }
 
@@ -789,8 +789,8 @@ impl Socket {
     /// If message cannot be received within the specified timeout, TryAgain error is returned.
     /// Negative value means infinite timeout. Default value is infinite timeout.
     pub fn set_receive_timeout(&mut self, timeout: isize) -> Result<()> {
-        self.set_socket_options_c_int(nanomsg_sys::NN_SOL_SOCKET,
-                                      nanomsg_sys::NN_RCVTIMEO,
+        self.set_socket_options_c_int(tetsy_nanomsg_sys::NN_SOL_SOCKET,
+                                      tetsy_nanomsg_sys::NN_RCVTIMEO,
                                       timeout as c_int)
     }
 
@@ -799,8 +799,8 @@ impl Socket {
     /// Note that actual reconnect interval may be randomised to some extent to prevent severe reconnection storms.
     /// Default value is 100 milliseconds.
     pub fn set_reconnect_interval(&mut self, interval: isize) -> Result<()> {
-        self.set_socket_options_c_int(nanomsg_sys::NN_SOL_SOCKET,
-                                      nanomsg_sys::NN_RECONNECT_IVL,
+        self.set_socket_options_c_int(tetsy_nanomsg_sys::NN_SOL_SOCKET,
+                                      tetsy_nanomsg_sys::NN_RECONNECT_IVL,
                                       interval as c_int)
     }
 
@@ -812,8 +812,8 @@ impl Socket {
     /// If `max_reconnect_interval` is less than `reconnect_interval`, it is ignored.
     /// Default value is 0.
     pub fn set_max_reconnect_interval(&mut self, interval: isize) -> Result<()> {
-        self.set_socket_options_c_int(nanomsg_sys::NN_SOL_SOCKET,
-                                      nanomsg_sys::NN_RECONNECT_IVL_MAX,
+        self.set_socket_options_c_int(tetsy_nanomsg_sys::NN_SOL_SOCKET,
+                                      tetsy_nanomsg_sys::NN_RECONNECT_IVL_MAX,
                                       interval as c_int)
     }
 
@@ -823,8 +823,8 @@ impl Socket {
     /// peers with high priority take precedence over peers with low priority.
     /// Highest priority is 1, lowest priority is 16. Default value is 8.
     pub fn set_send_priority(&mut self, priority: u8) -> Result<()> {
-        self.set_socket_options_c_int(nanomsg_sys::NN_SOL_SOCKET,
-                                      nanomsg_sys::NN_SNDPRIO,
+        self.set_socket_options_c_int(tetsy_nanomsg_sys::NN_SOL_SOCKET,
+                                      tetsy_nanomsg_sys::NN_SNDPRIO,
                                       priority as c_int)
     }
 
@@ -834,8 +834,8 @@ impl Socket {
     /// from peer with lower priority.
     /// Highest priority is 1, lowest priority is 16. Default value is 8.
     pub fn set_receive_priority(&mut self, priority: u8) -> Result<()> {
-        self.set_socket_options_c_int(nanomsg_sys::NN_SOL_SOCKET,
-                                      nanomsg_sys::NN_RCVPRIO,
+        self.set_socket_options_c_int(tetsy_nanomsg_sys::NN_SOL_SOCKET,
+                                      tetsy_nanomsg_sys::NN_RCVPRIO,
                                       priority as c_int)
     }
 
@@ -843,8 +843,8 @@ impl Socket {
     /// If set to false, both IPv4 and IPv6 addresses are used.
     /// Default value is true.
     pub fn set_ipv4_only(&mut self, ipv4_only: bool) -> Result<()> {
-        self.set_socket_options_c_int(nanomsg_sys::NN_SOL_SOCKET,
-                                      nanomsg_sys::NN_IPV4ONLY,
+        self.set_socket_options_c_int(tetsy_nanomsg_sys::NN_SOL_SOCKET,
+                                      tetsy_nanomsg_sys::NN_IPV4ONLY,
                                       ipv4_only as c_int)
     }
 
@@ -853,8 +853,8 @@ impl Socket {
     /// **This option is experimental, see `Socket::env` for details**
     #[cfg(not(windows))]
     pub fn set_socket_name(&mut self, name: &str) -> Result<()> {
-        self.set_socket_options_str(nanomsg_sys::NN_SOL_SOCKET,
-                                    nanomsg_sys::NN_SOCKET_NAME,
+        self.set_socket_options_str(tetsy_nanomsg_sys::NN_SOL_SOCKET,
+                                    tetsy_nanomsg_sys::NN_SOCKET_NAME,
                                     name)
     }
 
@@ -862,8 +862,8 @@ impl Socket {
     /// It also disables delaying of TCP acknowledgments.
     /// Using this option improves latency at the expense of throughput.
     pub fn set_tcp_nodelay(&mut self, tcp_nodelay: bool) -> Result<()> {
-        self.set_socket_options_c_int(nanomsg_sys::NN_TCP,
-                                      nanomsg_sys::NN_TCP_NODELAY,
+        self.set_socket_options_c_int(tetsy_nanomsg_sys::NN_TCP,
+                                      tetsy_nanomsg_sys::NN_TCP_NODELAY,
                                       tcp_nodelay as c_int)
     }
 
@@ -871,16 +871,16 @@ impl Socket {
 	/// be received on the unerlying socket
 	#[cfg(unix)]
 	pub fn get_receive_fd(&mut self) -> Result<RawFd> {
-		self.get_socket_option_c_int(nanomsg_sys::NN_SOL_SOCKET,
-									 nanomsg_sys::NN_RCVFD).map(|v: c_int| {
+		self.get_socket_option_c_int(tetsy_nanomsg_sys::NN_SOL_SOCKET,
+									 tetsy_nanomsg_sys::NN_RCVFD).map(|v: c_int| {
 										 v as RawFd
 									 })
 	}
 
 	#[cfg(windows)]
 	pub fn get_receive_fd(&mut self) -> Result<SOCKET> {
-		self.get_socket_option_c_int(nanomsg_sys::NN_SOL_SOCKET,
-									 nanomsg_sys::NN_RCVFD).map(|v: c_int| {
+		self.get_socket_option_c_int(tetsy_nanomsg_sys::NN_SOL_SOCKET,
+									 tetsy_nanomsg_sys::NN_RCVFD).map(|v: c_int| {
 										 v as SOCKET
 									 })
 	}
@@ -889,16 +889,16 @@ impl Socket {
 	/// can be sent on the underlying socket
 	#[cfg(unix)]
 	pub fn get_send_fd(&mut self) -> Result<RawFd> {
-		self.get_socket_option_c_int(nanomsg_sys::NN_SOL_SOCKET,
-									 nanomsg_sys::NN_SNDFD).map(|v: c_int| {
+		self.get_socket_option_c_int(tetsy_nanomsg_sys::NN_SOL_SOCKET,
+									 tetsy_nanomsg_sys::NN_SNDFD).map(|v: c_int| {
 										 v as RawFd
 									 })
 	}
 
 	#[cfg(windows)]
 	pub fn get_send_fd(&mut self) -> Result<SOCKET> {
-		self.get_socket_option_c_int(nanomsg_sys::NN_SOL_SOCKET,
-									 nanomsg_sys::NN_SNDFD).map(|v: c_int| {
+		self.get_socket_option_c_int(tetsy_nanomsg_sys::NN_SOL_SOCKET,
+									 tetsy_nanomsg_sys::NN_SNDFD).map(|v: c_int| {
 										 v as SOCKET
 									 })
 	}
@@ -908,8 +908,8 @@ impl Socket {
     /// **This option is experimental, see `Socket::env` for details
     #[cfg(not(windows))]
     pub fn get_socket_name(&mut self, len: usize) -> Result<String> {
-        self.get_socket_option_str(nanomsg_sys::NN_SOL_SOCKET,
-                                   nanomsg_sys::NN_SOCKET_NAME,
+        self.get_socket_option_str(tetsy_nanomsg_sys::NN_SOL_SOCKET,
+                                   tetsy_nanomsg_sys::NN_SOCKET_NAME,
                                    len).map(|v: CString| {
                                        v.to_string_lossy().into_owned()
                                    })
@@ -920,15 +920,15 @@ impl Socket {
     /// Type of the option is string.
     /// A single `Sub` socket can handle multiple subscriptions.
     pub fn subscribe(&mut self, topic: &str) -> Result<()> {
-        self.set_socket_options_str(nanomsg_sys::NN_SUB,
-                                    nanomsg_sys::NN_SUB_SUBSCRIBE,
+        self.set_socket_options_str(tetsy_nanomsg_sys::NN_SUB,
+                                    tetsy_nanomsg_sys::NN_SUB_SUBSCRIBE,
                                     topic)
     }
 
     /// Defined on full `Sub` socket. Unsubscribes from a particular topic.
     pub fn unsubscribe(&mut self, topic: &str) -> Result<()> {
-        self.set_socket_options_str(nanomsg_sys::NN_SUB,
-                                    nanomsg_sys::NN_SUB_UNSUBSCRIBE,
+        self.set_socket_options_str(tetsy_nanomsg_sys::NN_SUB,
+                                    tetsy_nanomsg_sys::NN_SUB_UNSUBSCRIBE,
                                     topic)
     }
 
@@ -936,8 +936,8 @@ impl Socket {
     /// Once the deadline expires, receive function will return `Timeout` error and all subsequent responses to the survey will be silently dropped.
     /// The deadline is measured in milliseconds. Default value is 1 second.
     pub fn set_survey_deadline(&mut self, deadline: isize) -> Result<()> {
-        self.set_socket_options_c_int(nanomsg_sys::NN_SURVEYOR,
-                                      nanomsg_sys::NN_SURVEYOR_DEADLINE,
+        self.set_socket_options_c_int(tetsy_nanomsg_sys::NN_SURVEYOR,
+                                      tetsy_nanomsg_sys::NN_SURVEYOR_DEADLINE,
                                       deadline as c_int)
     }
 
@@ -945,8 +945,8 @@ impl Socket {
     /// If reply is not received in specified amount of milliseconds, the request will be automatically resent.
     /// The type of this option is int. Default value is 1 minute.
     pub fn set_request_resend_interval(&mut self, interval: isize) -> Result<()> {
-        self.set_socket_options_c_int(nanomsg_sys::NN_REQ,
-                                      nanomsg_sys::NN_REQ_RESEND_IVL,
+        self.set_socket_options_c_int(tetsy_nanomsg_sys::NN_REQ,
+                                      tetsy_nanomsg_sys::NN_REQ_RESEND_IVL,
                                       interval as c_int)
     }
 
@@ -956,12 +956,12 @@ impl io::Read for Socket {
     /// Receive a message from the socket and store it in the buffer argument.
     /// Any bytes exceeding the length specified by `buffer.len()` will be truncated.
     /// Returns the number of bytes of the message stored in the buffer on success.
-    /// Please note that it differs from nanomsg's nn_recv which returns the msg size instead.
+    /// Please note that it differs from tetsy_nanomsg's nn_recv which returns the msg size instead.
     ///
     /// # Example
     ///
     /// ```rust
-    /// use nanomsg::{Socket, Protocol};
+    /// use tetsy_nanomsg::{Socket, Protocol};
     /// use std::thread;
     /// use std::io::{Read, Write};
     ///
@@ -1002,18 +1002,18 @@ impl io::Read for Socket {
         let c_buf_len = buf_len as size_t;
         let c_buf_ptr = buf_ptr as *mut c_void;
 
-        let ret = unsafe { nanomsg_sys::nn_recv(self.socket, c_buf_ptr, c_buf_len, 0) };
+        let ret = unsafe { tetsy_nanomsg_sys::nn_recv(self.socket, c_buf_ptr, c_buf_len, 0) };
 
         io_error_guard!(ret);
         Ok(cmp::min(ret as usize, buf_len))
     }
 
-    /// Receive a message from the socket. Copy the message allocated by nanomsg into the buffer on success.
+    /// Receive a message from the socket. Copy the message allocated by tetsy_nanomsg into the buffer on success.
     ///
     /// # Example:
     ///
     /// ```rust
-    /// use nanomsg::{Socket, Protocol};
+    /// use tetsy_nanomsg::{Socket, Protocol};
     /// use std::thread;
     /// use std::io::{Read, Write};
     ///
@@ -1050,24 +1050,24 @@ impl io::Read for Socket {
     /// - `io::ErrorKind::Other` : The library is terminating.
     fn read_to_end(&mut self, buf: &mut Vec<u8>) -> io::Result<usize> {
         let mut msg : *mut u8 = ptr::null_mut();
-        let ret = unsafe { nanomsg_sys::nn_recv(self.socket, mem::transmute(&mut msg), nanomsg_sys::NN_MSG, 0) };
+        let ret = unsafe { tetsy_nanomsg_sys::nn_recv(self.socket, mem::transmute(&mut msg), tetsy_nanomsg_sys::NN_MSG, 0) };
 
         io_error_guard!(ret);
 
         let ret = ret as usize;
         let bytes = unsafe { slice::from_raw_parts(msg, ret) };
         buf.extend_from_slice(bytes);
-        unsafe { nanomsg_sys::nn_freemsg(msg as *mut c_void) };
+        unsafe { tetsy_nanomsg_sys::nn_freemsg(msg as *mut c_void) };
         Ok(ret)
     }
 
-    /// Receive a message from the socket. Copy the message allocated by nanomsg into the buffer on success.
+    /// Receive a message from the socket. Copy the message allocated by tetsy_nanomsg into the buffer on success.
     /// If the data in the message is not valid UTF-8 then an error is returned and buffer is unchanged.
     ///
     /// # Example:
     ///
     /// ```rust
-    /// use nanomsg::{Socket, Protocol};
+    /// use tetsy_nanomsg::{Socket, Protocol};
     /// use std::thread;
     /// use std::io::{Read, Write};
     ///
@@ -1105,7 +1105,7 @@ impl io::Read for Socket {
     fn read_to_string(&mut self, buf: &mut String) -> io::Result<usize> {
         let mut msg : *mut u8 = ptr::null_mut();
         let ret = unsafe {
-            nanomsg_sys::nn_recv(self.socket, mem::transmute(&mut msg), nanomsg_sys::NN_MSG, 0)
+            tetsy_nanomsg_sys::nn_recv(self.socket, mem::transmute(&mut msg), tetsy_nanomsg_sys::NN_MSG, 0)
         };
 
         io_error_guard!(ret);
@@ -1116,11 +1116,11 @@ impl io::Read for Socket {
             match str::from_utf8(bytes) {
                 Ok(text) => {
                     buf.push_str(text);
-                    nanomsg_sys::nn_freemsg(msg as *mut c_void);
+                    tetsy_nanomsg_sys::nn_freemsg(msg as *mut c_void);
                     Ok(ret)
                 },
                 Err(_) => {
-                    nanomsg_sys::nn_freemsg(msg as *mut c_void);
+                    tetsy_nanomsg_sys::nn_freemsg(msg as *mut c_void);
                     Err(io::Error::new(io::ErrorKind::Other, "UTF8 conversion failed !"))
                 },
             }
@@ -1137,7 +1137,7 @@ impl io::Write for Socket {
     /// # Example:
     ///
     /// ```rust
-    /// use nanomsg::{Socket, Protocol};
+    /// use tetsy_nanomsg::{Socket, Protocol};
     /// use std::thread;
     /// use std::io::{Read, Write};
     ///
@@ -1175,7 +1175,7 @@ impl io::Write for Socket {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
         let buf_len = buf.len() as size_t;
         let buf_ptr = buf.as_ptr() as *const c_void;
-        let ret = unsafe { nanomsg_sys::nn_send(self.socket, buf_ptr, buf_len , 0) };
+        let ret = unsafe { tetsy_nanomsg_sys::nn_send(self.socket, buf_ptr, buf_len , 0) };
 
         io_error_guard!(ret);
         Ok(buf_len as usize)
@@ -1192,7 +1192,7 @@ impl Drop for Socket {
     /// The library will try to deliver any outstanding outbound messages for the time specified by `set_linger`.
     /// The call will block in the meantime.
     fn drop(&mut self) {
-        unsafe { nanomsg_sys::nn_close(self.socket); }
+        unsafe { tetsy_nanomsg_sys::nn_close(self.socket); }
     }
 }
 
@@ -1201,7 +1201,7 @@ mod tests {
     #![allow(unused_must_use)]
     use {Socket, Protocol, PollRequest, PollFd, Endpoint, PollInOut, Error};
     use libc::c_int;
-    use nanomsg_sys;
+    use tetsy_nanomsg_sys;
     use super::Protocol::*;
 
     use std::io::{Read, Write};
@@ -1867,16 +1867,16 @@ mod tests {
 
     #[test]
     fn protocol_matches_raw() {
-         assert_eq!(nanomsg_sys::NN_REQ, Req.to_raw());
-         assert_eq!(nanomsg_sys::NN_REP, Rep.to_raw());
-         assert_eq!(nanomsg_sys::NN_PUSH, Push.to_raw());
-         assert_eq!(nanomsg_sys::NN_PULL, Pull.to_raw());
-         assert_eq!(nanomsg_sys::NN_PAIR, Pair.to_raw());
-         assert_eq!(nanomsg_sys::NN_BUS, Bus.to_raw());
-         assert_eq!(nanomsg_sys::NN_PUB, Pub.to_raw());
-         assert_eq!(nanomsg_sys::NN_SUB, Sub.to_raw());
-         assert_eq!(nanomsg_sys::NN_SURVEYOR, Surveyor.to_raw());
-         assert_eq!(nanomsg_sys::NN_RESPONDENT, Respondent.to_raw());
+         assert_eq!(tetsy_nanomsg_sys::NN_REQ, Req.to_raw());
+         assert_eq!(tetsy_nanomsg_sys::NN_REP, Rep.to_raw());
+         assert_eq!(tetsy_nanomsg_sys::NN_PUSH, Push.to_raw());
+         assert_eq!(tetsy_nanomsg_sys::NN_PULL, Pull.to_raw());
+         assert_eq!(tetsy_nanomsg_sys::NN_PAIR, Pair.to_raw());
+         assert_eq!(tetsy_nanomsg_sys::NN_BUS, Bus.to_raw());
+         assert_eq!(tetsy_nanomsg_sys::NN_PUB, Pub.to_raw());
+         assert_eq!(tetsy_nanomsg_sys::NN_SUB, Sub.to_raw());
+         assert_eq!(tetsy_nanomsg_sys::NN_SURVEYOR, Surveyor.to_raw());
+         assert_eq!(tetsy_nanomsg_sys::NN_RESPONDENT, Respondent.to_raw());
     }
 
     #[test]

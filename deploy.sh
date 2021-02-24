@@ -8,7 +8,7 @@ git init
 git config user.name "Daniel Fagnan"
 git config user.email "dnfagnan@gmail.com"
 
-git remote add upstream "https://$GH_TOKEN@github.com/thehydroimpulse/nanomsg.rs.git"
+git remote add upstream "https://$GH_TOKEN@github.com/tetcoin/tetsy-nanomsg.git"
 git fetch upstream && git reset upstream/gh-pages
 
 touch .

@@ -1,5 +1,5 @@
 use libc::c_int;
-use nanomsg_sys;
+use tetsy_nanomsg_sys;
 use result::{Result,last_nano_error};
 
 /// An endpoint created for a specific socket. Each endpoint is identified
@@ -20,7 +20,7 @@ impl Endpoint {
     /// the library will try to deliver any outstanding outbound messages to the endpoint 
     /// for the time specified by `Socket::set_linger`.
     pub fn shutdown(&mut self) -> Result<()> {
-        let ret = unsafe { nanomsg_sys::nn_shutdown(self.socket, self.value) };
+        let ret = unsafe { tetsy_nanomsg_sys::nn_shutdown(self.socket, self.value) };
 
         if ret == -1 {
             Err(last_nano_error())

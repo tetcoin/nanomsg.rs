@@ -1,8 +1,8 @@
 #![allow(unused_must_use)]
 
-extern crate nanomsg;
+extern crate tetsy_nanomsg;
 
-use nanomsg::{Socket, Protocol};
+use tetsy_nanomsg::{Socket, Protocol};
 
 use std::thread;
 use std::time::Duration;

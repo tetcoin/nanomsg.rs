@@ -1,4 +1,4 @@
-# Nanomsg 
+# Tetsy Nanomsg 
 
 ![Cargo 0.6.0](http://img.shields.io/badge/cargo-0.6.0-orange.svg?style=flat)
 ![MIT License](http://img.shields.io/npm/l/express.svg?style=flat)
@@ -8,7 +8,7 @@
 
 [Documentation](http://thehydroimpulse.github.io/nanomsg.rs/nanomsg)
 
-Nanomsg is a modern messaging library that is the successor to ZeroMQ, written in C by Martin Sustrik and colleagues. The nanomsg library is licensed under MIT/X11 license. "nanomsg" is a trademark of 250bpm s.r.o.
+Tetsy Nanomsg is a modern messaging library that is the successor to ZeroMQ, written in C by Martin Sustrik and colleagues. The nanomsg library is licensed under MIT/X11 license. "nanomsg" is a trademark of 250bpm s.r.o.
 
 - http://nanomsg.org/
 - https://github.com/nanomsg/nanomsg
@@ -27,21 +27,21 @@ make deps
 
 ```toml
 [dependencies]
-nanomsg = "0.6.0"
+tetsy-nanomsg = "0.6.0"
 ```
 
 Simply import the crate to use it:
 
 ```rust
-extern crate nanomsg;
+extern crate tetsy_nanomsg;
 ```
 
 ## Creating a Socket
 
-The basis of Nanomsg is a `Socket`. Each socket can be of a certain type. The type of a socket defines it's behaviour and limitations (such as only being able to send and not receive).
+The basis of Tetsy Nanomsg is a `Socket`. Each socket can be of a certain type. The type of a socket defines it's behaviour and limitations (such as only being able to send and not receive).
 
 ```rust
-use nanomsg::{Socket, Protocol, Error};
+use tetsy_nanomsg::{Socket, Protocol, Error};
 
 /// Creating a new `Pull` socket type. Pull sockets can only receive messages
 /// from a `Push` socket type.
@@ -55,7 +55,7 @@ Now, each socket that is created can be bound to *multiple* endpoints. Each bind
 we'll take advantage of the `try!` macro.
 
 ```rust
-use nanomsg::{Socket, Protocol, Error};
+use tetsy_nanomsg::{Socket, Protocol, Error};
 
 /// Creating a new `Pull` socket type. Pull sockets can only receive messages
 /// from a `Push` socket type.

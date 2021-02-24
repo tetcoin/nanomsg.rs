@@ -1,6 +1,6 @@
-extern crate nanomsg;
+extern crate tetsy_nanomsg;
 
-use nanomsg::{Socket, Protocol};
+use tetsy_nanomsg::{Socket, Protocol};
 use std::thread;
 
 use std::io::{Read, Write};
@@ -35,7 +35,7 @@ fn main() {
     println!("client: set_linger");
     s.set_linger(-1).expect("cannot set linger");
     println!("client: write_all");
-    s.write_all("hello nanomsg".as_bytes()).unwrap();
+    s.write_all("hello tetsy_nanomsg".as_bytes()).unwrap();
     println!("client: shutdown");
     ep.shutdown().expect("cannot shutdown");
     println!("client: wait server");

@@ -1,6 +1,6 @@
 [package]
 
-name = "nanomsg-sys"
+name = "tetsy-nanomsg-sys"
 version = "0.7.0"
 authors = [
   "Daniel Fagnan <dnfagnan@gmail.com>",
@@ -9,10 +9,10 @@ authors = [
 ]
 
 license = "MIT"
-description = "The low-level bindings that is used by the nanomsg library."
-homepage = "https://github.com/thehydroimpulse/nanomsg.rs"
-documentation = "https://github.com/thehydroimpulse/nanomsg.rs"
-repository = "https://github.com/thehydroimpulse/nanomsg.rs"
+description = "The low-level bindings that is used by the tetsy-nanomsg library."
+homepage = "https://github.com/tetcoin/tetsy-nanomsg"
+documentation = "https://github.com/tetcoin/tetsy-nanomsg"
+repository = "https://github.com/tetcoin/tetsy-nanomsg"
 keywords = ["binding", "nanomsg"]
 links = "nanomsg"
 build = "build.rs"
